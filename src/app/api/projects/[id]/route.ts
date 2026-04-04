@@ -1,0 +1,59 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const userId = (session.user as { id: string }).id;
+  const project = await prisma.project.findFirst({
+    where: { id, userId },
+    include: {
+      messages: { orderBy: { createdAt: "asc" } },
+      artifacts: { orderBy: { createdAt: "desc" } },
+    },
+  });
+
+  if (!project) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(project);
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const userId = (session.user as { id: string }).id;
+  const body = await req.json();
+
+  const project = await prisma.project.findFirst({
+    where: { id, userId },
+  });
+
+  if (!project) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const updated = await prisma.project.update({
+    where: { id },
+    data: body,
+  });
+
+  return NextResponse.json(updated);
+}

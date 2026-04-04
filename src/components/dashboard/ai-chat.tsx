@@ -1,0 +1,155 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Send, Loader2, Bot, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface AIChatProps {
+  projectId: string;
+  agent: "validate" | "build" | "growth" | "raise";
+  agentName: string;
+  agentColor: string;
+  initialMessages?: Message[];
+  placeholder?: string;
+}
+
+export function AIChat({ projectId, agent, agentName, agentColor, initialMessages = [], placeholder }: AIChatProps) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || loading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input.trim(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const res = await fetch(`/api/ai/${agent}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId,
+          message: userMessage.content,
+          history: messages.map((m) => ({ role: m.role, content: m.content })),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        setMessages((prev) => [
+          ...prev,
+          { id: Date.now().toString(), role: "assistant", content: `Error: ${data.error}` },
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { id: Date.now().toString(), role: "assistant", content: data.response },
+        ]);
+      }
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now().toString(), role: "assistant", content: "Failed to connect to AI. Please try again." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-[600px] rounded-xl border border-border bg-surface">
+      {/* Header */}
+      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+        <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", agentColor)}>
+          <Bot className="h-4 w-4 text-white" />
+        </div>
+        <div>
+          <h3 className="text-sm font-bold">{agentName}</h3>
+          <p className="text-xs text-muted">AI Agent</p>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && (
+          <div className="flex h-full items-center justify-center">
+            <p className="text-sm text-muted text-center max-w-sm">
+              {placeholder || `Start chatting with the ${agentName} to get started.`}
+            </p>
+          </div>
+        )}
+        {messages.map((msg) => (
+          <div key={msg.id} className={cn("flex gap-3", msg.role === "user" && "flex-row-reverse")}>
+            <div className={cn(
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+              msg.role === "assistant" ? agentColor : "bg-surface-light"
+            )}>
+              {msg.role === "assistant" ? <Bot className="h-4 w-4 text-white" /> : <User className="h-4 w-4" />}
+            </div>
+            <div className={cn(
+              "max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed",
+              msg.role === "assistant" ? "bg-background border border-border" : "bg-accent-purple/20"
+            )}>
+              <div className="whitespace-pre-wrap">{msg.content}</div>
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div className="flex gap-3">
+            <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", agentColor)}>
+              <Bot className="h-4 w-4 text-white" />
+            </div>
+            <div className="rounded-xl bg-background border border-border px-4 py-3">
+              <Loader2 className="h-4 w-4 animate-spin text-muted" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="border-t border-border p-4">
+        <div className="flex gap-2">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
+            placeholder="Type your message..."
+            className="min-h-[44px] max-h-32 resize-none"
+            rows={1}
+          />
+          <Button type="submit" disabled={loading || !input.trim()} size="icon" className="shrink-0">
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
