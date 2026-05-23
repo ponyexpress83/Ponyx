@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Loader2, Bot, User } from "lucide-react";
@@ -19,9 +20,10 @@ interface AIChatProps {
   agentColor: string;
   initialMessages?: Message[];
   placeholder?: string;
+  onScoreUpdate?: (score: number) => void;
 }
 
-export function AIChat({ projectId, agent, agentName, agentColor, initialMessages = [], placeholder }: AIChatProps) {
+export function AIChat({ projectId, agent, agentName, agentColor, initialMessages = [], placeholder, onScoreUpdate }: AIChatProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,6 +70,12 @@ export function AIChat({ projectId, agent, agentName, agentColor, initialMessage
           ...prev,
           { id: Date.now().toString(), role: "assistant", content: data.response },
         ]);
+        if (onScoreUpdate) {
+          const scoreMatch = data.response.match(/"score"\s*:\s*(\d+)/);
+          if (scoreMatch) {
+            onScoreUpdate(parseInt(scoreMatch[1]));
+          }
+        }
       }
     } catch {
       setMessages((prev) => [
@@ -80,8 +88,7 @@ export function AIChat({ projectId, agent, agentName, agentColor, initialMessage
   };
 
   return (
-    <div className="flex flex-col h-[600px] rounded-xl border border-border bg-surface">
-      {/* Header */}
+    <div className="flex flex-col h-[600px] rounded-xl border border-border bg-surface overflow-hidden">
       <div className="flex items-center gap-3 border-b border-border px-4 py-3">
         <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", agentColor)}>
           <Bot className="h-4 w-4 text-white" />
@@ -92,13 +99,17 @@ export function AIChat({ projectId, agent, agentName, agentColor, initialMessage
         </div>
       </div>
 
-      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-muted text-center max-w-sm">
-              {placeholder || `Start chatting with the ${agentName} to get started.`}
-            </p>
+            <div className="text-center max-w-sm space-y-3">
+              <div className={cn("mx-auto flex h-12 w-12 items-center justify-center rounded-xl", agentColor)}>
+                <Bot className="h-6 w-6 text-white" />
+              </div>
+              <p className="text-sm text-muted">
+                {placeholder || `Start chatting with the ${agentName} to get started.`}
+              </p>
+            </div>
           </div>
         )}
         {messages.map((msg) => (
@@ -113,7 +124,13 @@ export function AIChat({ projectId, agent, agentName, agentColor, initialMessage
               "max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed",
               msg.role === "assistant" ? "bg-background border border-border" : "bg-accent-purple/20"
             )}>
-              <div className="whitespace-pre-wrap">{msg.content}</div>
+              {msg.role === "assistant" ? (
+                <div className="prose prose-invert prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted prose-strong:text-foreground prose-td:text-muted prose-th:text-foreground prose-li:text-muted prose-a:text-accent-purple">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+              ) : (
+                <div className="whitespace-pre-wrap">{msg.content}</div>
+              )}
             </div>
           </div>
         ))}
@@ -123,13 +140,15 @@ export function AIChat({ projectId, agent, agentName, agentColor, initialMessage
               <Bot className="h-4 w-4 text-white" />
             </div>
             <div className="rounded-xl bg-background border border-border px-4 py-3">
-              <Loader2 className="h-4 w-4 animate-spin text-muted" />
+              <div className="flex items-center gap-2 text-sm text-muted">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>{agentName} is thinking...</span>
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Input */}
       <form onSubmit={handleSubmit} className="border-t border-border p-4">
         <div className="flex gap-2">
           <Textarea
