@@ -1,10 +1,6 @@
-import { withAuth } from "next-auth/middleware";
+import { auth } from "@/lib/auth";
 
-export default withAuth({
-  pages: {
-    signIn: "/auth/signin",
-  },
-});
+export default auth;
 
 export const config = {
   matcher: ["/dashboard/:path*"],
