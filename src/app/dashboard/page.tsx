@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Loader2, Rocket, BarChart3, Code2, PiggyBank } from "lucide-react";
+import { Plus, Loader2, Rocket, BarChart3, Code2, PiggyBank, Sparkles } from "lucide-react";
 
 interface Project {
   id: string;
@@ -38,6 +38,7 @@ function DashboardContent() {
   const [showNew, setShowNew] = useState(searchParams.get("new") === "true");
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: "", description: "" });
+  const [creatingDemo, setCreatingDemo] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -71,6 +72,19 @@ function DashboardContent() {
     }
     toast.error("Failed to create project");
     setCreating(false);
+  };
+
+  const handleCreateDemo = async () => {
+    setCreatingDemo(true);
+    const res = await fetch("/api/projects/demo", { method: "POST" });
+    if (res.ok) {
+      const project = await res.json();
+      toast.success("Demo project created with sample data!");
+      router.push(`/dashboard/project/${project.id}`);
+      return;
+    }
+    toast.error("Failed to create demo");
+    setCreatingDemo(false);
   };
 
   if (loading) {
@@ -156,14 +170,25 @@ function DashboardContent() {
             <p className="mt-2 text-muted max-w-md">
               Describe your idea and PONYX will guide you through validation, building, testing, and fundraising — in days, not months.
             </p>
-            <Button
-              onClick={() => setShowNew(true)}
-              className="mt-6 bg-gradient-to-r from-brand-pink to-brand-magenta hover:opacity-90"
-              size="lg"
-            >
-              <Plus className="h-5 w-5" />
-              Create First Project
-            </Button>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={() => setShowNew(true)}
+                className="bg-gradient-to-r from-brand-pink to-brand-magenta hover:opacity-90"
+                size="lg"
+              >
+                <Plus className="h-5 w-5" />
+                Create First Project
+              </Button>
+              <Button
+                onClick={handleCreateDemo}
+                variant="outline"
+                size="lg"
+                disabled={creatingDemo}
+              >
+                {creatingDemo ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                Try Demo Project
+              </Button>
+            </div>
           </div>
 
           {/* How it works cards */}
