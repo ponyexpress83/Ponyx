@@ -31,7 +31,12 @@ export default function SignInPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError(result.error);
+      const errorMap: Record<string, string> = {
+        "User already exists": "An account with this email already exists. Try signing in.",
+        "Invalid credentials": "Incorrect email or password. Please try again.",
+        "Email and password required": "Please enter both email and password.",
+      };
+      setError(errorMap[result.error] || result.error);
     } else {
       router.push("/dashboard");
     }

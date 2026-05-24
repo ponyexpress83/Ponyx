@@ -6,11 +6,12 @@ import { toast } from "sonner";
 import { PhaseTimeline } from "@/components/dashboard/phase-timeline";
 import { AIChat } from "@/components/dashboard/ai-chat";
 import { ScoreRadial } from "@/components/dashboard/score-radial";
+import { PhaseSummary } from "@/components/dashboard/phase-summary";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectSkeleton } from "@/components/dashboard/project-skeleton";
-import { ArrowRight, BarChart3, Code2, Rocket, PiggyBank, TrendingUp, Target, Shield, Lightbulb, Timer, Trash2 } from "lucide-react";
+import { ArrowRight, BarChart3, Code2, Rocket, PiggyBank, TrendingUp, Target, Shield, Lightbulb, Timer, Trash2, Download, ChevronLeft } from "lucide-react";
 
 interface AIMessage {
   id: string;
@@ -135,8 +136,28 @@ export default function ProjectDetailPage() {
     .filter((m) => m.agent === currentAgentName)
     .map((m) => ({ id: m.id, role: m.role as "user" | "assistant", content: m.content }));
 
+  const exportProject = () => {
+    window.open(`/api/projects/${params.id}/export`, "_blank");
+    toast.success("Downloading report...");
+  };
+
   return (
     <div className="space-y-8">
+      {/* Breadcrumb */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="flex items-center gap-1 text-sm text-muted hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to Projects
+        </button>
+        <Button onClick={exportProject} variant="outline" size="sm">
+          <Download className="h-4 w-4" />
+          Export Report
+        </Button>
+      </div>
+
       {/* Project Header */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex-1">
@@ -295,6 +316,13 @@ export default function ProjectDetailPage() {
           />
         </div>
       </div>
+
+      {/* Phase Summary */}
+      <PhaseSummary
+        currentPhase={project.phase}
+        messages={project.messages || []}
+        score={project.score}
+      />
     </div>
   );
 }

@@ -185,6 +185,11 @@ export function AIChat({ projectId, agent, agentName, agentColor, initialMessage
             <Send className="h-4 w-4" />
           </Button>
         </div>
+        <p className="mt-2 text-xs text-muted text-right">
+          <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px]">Enter</kbd> to send
+          <span className="mx-1.5">·</span>
+          <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px]">Shift+Enter</kbd> for new line
+        </p>
       </form>
     </div>
   );
