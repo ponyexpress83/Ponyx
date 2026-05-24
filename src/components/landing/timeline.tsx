@@ -5,29 +5,29 @@ import { motion } from "framer-motion";
 const phases = [
   {
     day: "DAY 1",
-    label: "VALUTAZIONE",
-    description: "Voice/Video input → L'AI valuta la tua idea rispetto ai dati di mercato reali in pochi minuti.",
+    label: "VALIDATE",
+    description: "Chat with AI to describe your idea. Get an instant validation score and dynamic pricing assessment.",
     color: "bg-accent-purple",
     textColor: "text-accent-purple",
   },
   {
-    day: "DAYS 2–7",
+    day: "DAYS 2-3",
     label: "BUILD",
-    description: "Generazione MVP con AI: landing page, prodotto, copy. Zero codice necessario.",
+    description: "AI generates your MVP: landing page, marketing copy, product architecture — zero coding required.",
     color: "bg-accent-orange",
     textColor: "text-accent-orange",
   },
   {
-    day: "DAYS 8–12",
-    label: "VALIDATION",
-    description: "Utenti reali, feedback reali, segnali reali. Inizia il market testing.",
+    day: "DAYS 3-5",
+    label: "TEST",
+    description: "Market testing begins. First users acquired, behavioral data collected, growth signals analyzed.",
     color: "bg-accent-green",
     textColor: "text-accent-green",
   },
   {
-    day: "DAYS 13–15",
+    day: "DAYS 5-7",
     label: "RAISE",
-    description: "Pitch deck, modelli finanziari e data room generati automaticamente.",
+    description: "Decision point: scale or kill — with data, not gut feeling. Pitch deck and financials ready.",
     color: "bg-accent-red",
     textColor: "text-accent-red",
   },
@@ -43,8 +43,8 @@ export function Timeline() {
           viewport={{ once: true }}
           className="mb-16 text-4xl font-black md:text-6xl"
         >
-          Autonomous{" "}
-          <span className="gradient-text">Startup Creation</span>
+          What happens in{" "}
+          <span className="gradient-text">7 days</span>
         </motion.h2>
 
         {/* Timeline bar */}
@@ -79,8 +79,8 @@ export function Timeline() {
               transition={{ delay: index * 0.1 }}
             >
               <h3 className="text-lg font-bold">{phase.day}</h3>
-              <div className="mt-2 flex items-center gap-2">
-                <div className={`h-full w-1 self-stretch ${phase.color} rounded`} />
+              <div className="mt-2 flex items-start gap-2">
+                <div className={`w-1 self-stretch ${phase.color} rounded shrink-0 min-h-[60px]`} />
                 <div>
                   <span className={`text-sm font-semibold ${phase.textColor}`}>{phase.label}</span>
                   <p className="mt-1 text-sm text-muted leading-relaxed">{phase.description}</p>
@@ -98,7 +98,7 @@ export function Timeline() {
         >
           <p className="text-muted">
             <span className="font-bold text-foreground">Process simplicity:</span>{" "}
-            Just chat with our AI via voice message or short video. PONYX evaluates the potential instantly and
+            Just chat with our AI via text or voice. PONYX evaluates the potential instantly and
             generates a dynamic pricing model tailored to your startup&apos;s value.
           </p>
         </motion.div>
@@ -109,7 +109,7 @@ export function Timeline() {
           viewport={{ once: true }}
           className="mt-8 text-center text-xl italic text-accent-green"
         >
-          &ldquo;From idea &rarr; valuation &rarr; product &rarr; traction. In 15 days.&rdquo;
+          &ldquo;From voice message to first revenue — in 7 days.&rdquo;
         </motion.p>
       </div>
     </section>

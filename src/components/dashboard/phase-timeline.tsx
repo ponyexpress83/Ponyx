@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 
 const phases = [
-  { key: "VALIDATE", label: "Valutazione", color: "bg-accent-purple", textColor: "text-accent-purple" },
+  { key: "VALIDATE", label: "Validate", color: "bg-accent-purple", textColor: "text-accent-purple" },
   { key: "BUILD", label: "Build", color: "bg-accent-orange", textColor: "text-accent-orange" },
   { key: "TEST", label: "Test", color: "bg-accent-green", textColor: "text-accent-green" },
   { key: "RAISE", label: "Raise", color: "bg-accent-red", textColor: "text-accent-red" },
