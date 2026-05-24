@@ -6,6 +6,7 @@ import { Timeline } from "@/components/landing/timeline";
 import { Agents } from "@/components/landing/agents";
 import { Pricing } from "@/components/landing/pricing";
 import { Testimonials } from "@/components/landing/testimonials";
+import { FAQ } from "@/components/landing/faq";
 import { CTA } from "@/components/landing/cta";
 import { Footer } from "@/components/layout/footer";
 
@@ -20,6 +21,7 @@ export default function Home() {
       <Agents />
       <Pricing />
       <Testimonials />
+      <FAQ />
       <CTA />
       <Footer />
     </div>

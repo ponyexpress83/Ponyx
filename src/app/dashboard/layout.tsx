@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, LogOut, Plus, User } from "lucide-react";
+import { LayoutDashboard, LogOut, Plus, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({
@@ -36,6 +36,18 @@ export default function DashboardLayout({
                 <LayoutDashboard className="h-4 w-4" />
                 Projects
               </Link>
+              <Link
+                href="/dashboard/settings"
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === "/dashboard/settings"
+                    ? "bg-surface text-foreground"
+                    : "text-muted hover:text-foreground"
+                )}
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">
@@ -65,7 +77,40 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-6 py-8 pb-24 md:pb-8">{children}</main>
+
+      {/* Mobile bottom nav */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-xl md:hidden">
+        <div className="flex items-center justify-around py-2">
+          <Link
+            href="/dashboard"
+            className={cn(
+              "flex flex-col items-center gap-1 px-4 py-1.5 text-xs transition-colors",
+              pathname === "/dashboard" ? "text-foreground" : "text-muted"
+            )}
+          >
+            <LayoutDashboard className="h-5 w-5" />
+            Projects
+          </Link>
+          <Link
+            href="/dashboard?new=true"
+            className="flex flex-col items-center gap-1 px-4 py-1.5 text-xs text-brand-pink"
+          >
+            <Plus className="h-5 w-5" />
+            New
+          </Link>
+          <Link
+            href="/dashboard/settings"
+            className={cn(
+              "flex flex-col items-center gap-1 px-4 py-1.5 text-xs transition-colors",
+              pathname === "/dashboard/settings" ? "text-foreground" : "text-muted"
+            )}
+          >
+            <Settings className="h-5 w-5" />
+            Settings
+          </Link>
+        </div>
+      </nav>
     </div>
   );
 }
