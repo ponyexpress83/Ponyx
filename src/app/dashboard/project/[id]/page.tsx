@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { PhaseTimeline } from "@/components/dashboard/phase-timeline";
 import { AIChat } from "@/components/dashboard/ai-chat";
 import { ScoreRadial } from "@/components/dashboard/score-radial";
@@ -101,6 +102,7 @@ export default function ProjectDetailPage() {
     if (res.ok) {
       const updated = await res.json();
       setProject(updated);
+      toast.success(`Advanced to ${nextPhase} phase`);
     }
   };
 
@@ -114,6 +116,7 @@ export default function ProjectDetailPage() {
     if (!confirm("Are you sure you want to delete this project? This cannot be undone.")) return;
     const res = await fetch(`/api/projects/${params.id}`, { method: "DELETE" });
     if (res.ok) {
+      toast.success("Project deleted");
       router.push("/dashboard");
     }
   };

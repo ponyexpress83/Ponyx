@@ -3,7 +3,9 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { ProjectCard } from "@/components/dashboard/project-card";
+import { StatsOverview } from "@/components/dashboard/stats-overview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,9 +65,11 @@ function DashboardContent() {
       const project = await res.json();
       setForm({ name: "", description: "" });
       setShowNew(false);
+      toast.success("Project created! Starting validation...");
       router.push(`/dashboard/project/${project.id}`);
       return;
     }
+    toast.error("Failed to create project");
     setCreating(false);
   };
 
@@ -183,11 +187,14 @@ function DashboardContent() {
           </div>
         </div>
       ) : projects.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
+        <>
+          <StatsOverview projects={projects} />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

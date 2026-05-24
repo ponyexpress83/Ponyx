@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Loader2, Bot, User } from "lucide-react";
+import { Send, Loader2, Bot, User, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -73,7 +74,11 @@ export function AIChat({ projectId, agent, agentName, agentColor, initialMessage
         if (onScoreUpdate) {
           const scoreMatch = data.response.match(/"score"\s*:\s*(\d+)/);
           if (scoreMatch) {
-            onScoreUpdate(parseInt(scoreMatch[1]));
+            const score = parseInt(scoreMatch[1]);
+            onScoreUpdate(score);
+            toast.success(`Validation Score: ${score}/100`, {
+              description: score >= 75 ? "Strong potential detected!" : score >= 60 ? "Moderate potential — refine your positioning" : "Consider iterating on your approach",
+            });
           }
         }
       }
@@ -121,13 +126,25 @@ export function AIChat({ projectId, agent, agentName, agentColor, initialMessage
               {msg.role === "assistant" ? <Bot className="h-4 w-4 text-white" /> : <User className="h-4 w-4" />}
             </div>
             <div className={cn(
-              "max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed",
+              "max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed group/msg relative",
               msg.role === "assistant" ? "bg-background border border-border" : "bg-accent-purple/20"
             )}>
               {msg.role === "assistant" ? (
-                <div className="prose prose-invert prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted prose-strong:text-foreground prose-td:text-muted prose-th:text-foreground prose-li:text-muted prose-a:text-accent-purple">
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
-                </div>
+                <>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(msg.content);
+                      toast.success("Copied to clipboard");
+                    }}
+                    className="absolute top-2 right-2 opacity-0 group-hover/msg:opacity-100 transition-opacity p-1 rounded hover:bg-surface-light"
+                    title="Copy"
+                  >
+                    <Copy className="h-3.5 w-3.5 text-muted" />
+                  </button>
+                  <div className="prose prose-invert prose-sm max-w-none prose-headings:text-foreground prose-p:text-muted prose-strong:text-foreground prose-td:text-muted prose-th:text-foreground prose-li:text-muted prose-a:text-accent-purple">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                </>
               ) : (
                 <div className="whitespace-pre-wrap">{msg.content}</div>
               )}
