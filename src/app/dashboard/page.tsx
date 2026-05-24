@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ProjectCard } from "@/components/dashboard/project-card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { data: session } = useSession();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,9 +60,11 @@ function DashboardContent() {
     });
 
     if (res.ok) {
+      const project = await res.json();
       setForm({ name: "", description: "" });
       setShowNew(false);
-      fetchProjects();
+      router.push(`/dashboard/project/${project.id}`);
+      return;
     }
     setCreating(false);
   };

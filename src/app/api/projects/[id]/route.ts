@@ -49,10 +49,41 @@ export async function PATCH(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  const allowedFields = ["phase", "score", "pricingTier"];
+  const safeData: Record<string, unknown> = {};
+  for (const key of allowedFields) {
+    if (key in body) safeData[key] = body[key];
+  }
+
   const updated = await prisma.project.update({
     where: { id },
-    data: body,
+    data: safeData,
   });
 
   return NextResponse.json(updated);
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const userId = (session.user as { id: string }).id;
+
+  const project = await prisma.project.findFirst({
+    where: { id, userId },
+  });
+
+  if (!project) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  await prisma.project.delete({ where: { id } });
+
+  return NextResponse.json({ success: true });
 }

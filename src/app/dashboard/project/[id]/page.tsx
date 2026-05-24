@@ -8,7 +8,15 @@ import { ScoreRadial } from "@/components/dashboard/score-radial";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowRight, BarChart3, Code2, Rocket, PiggyBank, TrendingUp, Target, Shield, Lightbulb, Timer } from "lucide-react";
+import { ProjectSkeleton } from "@/components/dashboard/project-skeleton";
+import { ArrowRight, BarChart3, Code2, Rocket, PiggyBank, TrendingUp, Target, Shield, Lightbulb, Timer, Trash2 } from "lucide-react";
+
+interface AIMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  agent: string;
+}
 
 interface Project {
   id: string;
@@ -18,6 +26,7 @@ interface Project {
   score: number | null;
   pricingTier: string | null;
   createdAt: string;
+  messages?: AIMessage[];
 }
 
 const phaseConfig = {
@@ -101,17 +110,27 @@ export default function ProjectDetailPage() {
     }
   };
 
+  const deleteProject = async () => {
+    if (!confirm("Are you sure you want to delete this project? This cannot be undone.")) return;
+    const res = await fetch(`/api/projects/${params.id}`, { method: "DELETE" });
+    if (res.ok) {
+      router.push("/dashboard");
+    }
+  };
+
   if (loading || !project) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <Loader2 className="h-8 w-8 animate-spin text-muted" />
-      </div>
-    );
+    return <ProjectSkeleton />;
   }
 
   const config = phaseConfig[project.phase as keyof typeof phaseConfig] || phaseConfig.VALIDATE;
   const phaseIndex = phaseOrder.indexOf(project.phase);
   const dayRange = phaseIndex === 0 ? "Day 1" : phaseIndex === 1 ? "Days 2-3" : phaseIndex === 2 ? "Days 3-5" : "Days 5-7";
+
+  const agentNameMap: Record<string, string> = { validate: "ANALYST", build: "BUILDER", growth: "GROWTH", raise: "INVESTOR" };
+  const currentAgentName = agentNameMap[config.agent];
+  const chatHistory = (project.messages || [])
+    .filter((m) => m.agent === currentAgentName)
+    .map((m) => ({ id: m.id, role: m.role as "user" | "assistant", content: m.content }));
 
   return (
     <div className="space-y-8">
@@ -129,6 +148,15 @@ export default function ProjectDetailPage() {
             </Badge>
           </div>
           <p className="text-muted max-w-xl">{project.description}</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={deleteProject}
+            className="mt-3 text-muted hover:text-accent-red"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete Project
+          </Button>
         </div>
 
         {project.score !== null && (
@@ -253,11 +281,13 @@ export default function ProjectDetailPage() {
         {/* AI Chat */}
         <div className="lg:col-span-3">
           <AIChat
+            key={project.phase}
             projectId={project.id}
             agent={config.agent}
             agentName={config.name}
             agentColor={config.color}
             placeholder={config.placeholder}
+            initialMessages={chatHistory}
             onScoreUpdate={handleScoreUpdate}
           />
         </div>
